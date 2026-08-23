@@ -1,22 +1,38 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2, LogOut, Pencil } from "lucide-react";
+import {
+  Briefcase,
+  BookOpen,
+  Compass,
+  Heart,
+  Loader2,
+  LogOut,
+  Palette,
+  Pencil,
+  Target,
+  Users,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { priorityLabel } from "@/lib/onboarding";
+import worldsMap from "@/assets/worlds-map.jpg";
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Your profile — Kindle" },
-      { name: "description", content: "Your saved priorities, hobbies, and goals." },
-      { property: "og:title", content: "Your profile — Kindle" },
+      { title: "Your Worlds — Wayfarer" },
+      {
+        name: "description",
+        content: "The realms you chose, the passions you keep, and the goals ahead.",
+      },
+      { property: "og:title", content: "Your Worlds — Wayfarer" },
       {
         property: "og:description",
-        content: "Your saved priorities, hobbies, and goals.",
+        content: "The realms you chose, the passions you keep, and the goals ahead.",
       },
     ],
   }),
@@ -27,6 +43,14 @@ type Answers = {
   priorities: string[];
   hobbies: string;
   goals: string;
+};
+
+const WORLD_META: Record<string, { icon: LucideIcon; tagline: string }> = {
+  career: { icon: Briefcase, tagline: "Build your legacy" },
+  growth: { icon: BookOpen, tagline: "Expand your mind" },
+  social: { icon: Users, tagline: "Nurture relationships" },
+  wellbeing: { icon: Heart, tagline: "Tend to yourself" },
+  adventure: { icon: Compass, tagline: "Explore the unknown" },
 };
 
 function DashboardPage() {
@@ -77,71 +101,105 @@ function DashboardPage() {
 
   if (loading || busy || !answers) {
     return (
-      <main className="bg-warm flex min-h-screen items-center justify-center">
+      <main className="bg-night flex min-h-screen items-center justify-center">
         <Loader2 className="text-gold size-6 animate-spin" />
       </main>
     );
   }
 
   return (
-    <main className="bg-warm min-h-screen px-5 py-12">
+    <main className="bg-night min-h-screen px-5 py-10">
       <div className="mx-auto w-full max-w-3xl">
-        <header className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-muted-foreground text-sm">Welcome back</p>
-            <h1 className="mt-1 text-4xl font-semibold">
-              {nickname ?? user?.email?.split("@")[0]}
-            </h1>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="rounded-xl"
-              onClick={() => navigate({ to: "/onboarding", search: { edit: "1" } })}
-            >
-              <Pencil className="mr-2 size-4" />
-              Edit answers
-            </Button>
-            <Button variant="ghost" className="rounded-xl" onClick={signOut}>
-              <LogOut className="mr-2 size-4" />
-              Sign out
-            </Button>
-          </div>
+        <header className="text-center">
+          <p className="text-muted-foreground font-sans text-lg italic">
+            Good to see you, {nickname ?? user?.email?.split("@")[0]}.
+          </p>
+          <h1 className="text-gilded mt-2 text-4xl tracking-[0.18em] uppercase">
+            Your Worlds
+          </h1>
+          <div className="gold-rule mx-auto mt-4 w-40" />
         </header>
 
-        <section className="animate-rise mt-8 grid gap-5">
-          <article className="bg-card shadow-soft rounded-3xl border p-7">
-            <h2 className="text-muted-foreground text-sm tracking-widest uppercase">
-              Current priorities
-            </h2>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {answers.priorities.length === 0 ? (
-                <p className="text-muted-foreground">Nothing selected yet.</p>
-              ) : (
-                answers.priorities.map((p) => (
-                  <span
+        <section className="animate-rise shadow-deep border-gold/25 relative mt-8 overflow-hidden rounded-3xl border">
+          <img
+            src={worldsMap}
+            alt="An illustrated map of glowing fantasy realms linked by a golden path"
+            width={1024}
+            height={1536}
+            loading="lazy"
+            className="absolute inset-0 size-full object-cover"
+          />
+          <div className="absolute inset-0 bg-background/55" />
+          <div className="relative grid gap-3 p-5 sm:grid-cols-2 sm:p-7">
+            {answers.priorities.length === 0 ? (
+              <p className="text-muted-foreground">No realms chosen yet.</p>
+            ) : (
+              answers.priorities.map((p) => {
+                const meta = WORLD_META[p];
+                const Icon = meta?.icon ?? Compass;
+                return (
+                  <div
                     key={p}
-                    className="bg-gold-soft/50 border-gold/40 rounded-full border px-4 py-1.5 text-sm font-medium"
+                    className="glass-panel flex items-center gap-4 rounded-2xl px-4 py-3"
                   >
-                    {priorityLabel(p)}
-                  </span>
-                ))
-              )}
-            </div>
-          </article>
+                    <span className="border-gold/50 text-gold flex size-11 shrink-0 items-center justify-center rounded-full border bg-background/50">
+                      <Icon className="size-5" />
+                    </span>
+                    <span>
+                      <span className="block font-display text-sm tracking-[0.2em] uppercase">
+                        {priorityLabel(p)}
+                      </span>
+                      <span className="text-muted-foreground font-sans text-base italic">
+                        {meta?.tagline ?? "Your own path"}
+                      </span>
+                    </span>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </section>
 
-          <article className="bg-card shadow-soft rounded-3xl border p-7">
-            <h2 className="text-muted-foreground text-sm tracking-widest uppercase">Hobbies</h2>
-            <p className="mt-3 leading-relaxed whitespace-pre-wrap">{answers.hobbies}</p>
-          </article>
-
-          <article className="bg-card shadow-soft rounded-3xl border p-7">
-            <h2 className="text-muted-foreground text-sm tracking-widest uppercase">
-              Focus &amp; goals
+        <section className="animate-rise mt-6 grid gap-5 sm:grid-cols-2">
+          <article className="glass-panel shadow-deep rounded-3xl p-6">
+            <h2 className="text-gold flex items-center gap-2 text-sm tracking-[0.22em] uppercase">
+              <Palette className="size-4" /> Passions
             </h2>
-            <p className="mt-3 leading-relaxed whitespace-pre-wrap">{answers.goals}</p>
+            <div className="gold-rule my-4" />
+            <p className="font-sans text-lg leading-relaxed whitespace-pre-wrap">
+              {answers.hobbies}
+            </p>
+          </article>
+
+          <article className="glass-panel shadow-deep rounded-3xl p-6">
+            <h2 className="text-gold flex items-center gap-2 text-sm tracking-[0.22em] uppercase">
+              <Target className="size-4" /> The Road Ahead
+            </h2>
+            <div className="gold-rule my-4" />
+            <p className="font-sans text-lg leading-relaxed whitespace-pre-wrap">
+              {answers.goals}
+            </p>
           </article>
         </section>
+
+        <div className="mt-8 flex justify-center gap-3">
+          <Button
+            variant="outline"
+            className="border-gold/40 rounded-full px-6 tracking-[0.18em] uppercase"
+            onClick={() => navigate({ to: "/onboarding", search: { edit: "1" } })}
+          >
+            <Pencil className="mr-2 size-4" />
+            Edit answers
+          </Button>
+          <Button
+            variant="ghost"
+            className="rounded-full px-6 tracking-[0.18em] uppercase"
+            onClick={signOut}
+          >
+            <LogOut className="mr-2 size-4" />
+            Sign out
+          </Button>
+        </div>
       </div>
     </main>
   );
