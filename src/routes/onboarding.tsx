@@ -103,28 +103,28 @@ function OnboardingPage() {
 
   if (loading || checking) {
     return (
-      <main className="bg-warm flex min-h-screen items-center justify-center">
+      <main className="bg-night flex min-h-screen items-center justify-center">
         <Loader2 className="text-gold size-6 animate-spin" />
       </main>
     );
   }
 
   return (
-    <main className="bg-warm min-h-screen px-5 py-12">
+    <main className="bg-night min-h-screen px-5 py-12">
       <div className="mx-auto w-full max-w-2xl">
         <div className="flex items-center gap-2">
           {[0, 1, 2].map((i) => (
             <span
               key={i}
               className={`h-1.5 flex-1 rounded-full transition-colors ${
-                i <= step ? "bg-gold" : "bg-gold-soft/60"
+                i <= step ? "bg-gold" : "bg-gold/20"
               }`}
             />
           ))}
         </div>
         <p className="text-muted-foreground mt-3 text-sm">Question {step + 1} of 3</p>
 
-        <div key={step} className="animate-rise bg-card shadow-soft mt-6 rounded-3xl border p-7 sm:p-10">
+        <div key={step} className="animate-rise glass-panel shadow-deep mt-6 rounded-3xl border p-7 sm:p-10">
           {step === 0 && (
             <>
               <h1 className="text-3xl font-semibold">
@@ -141,8 +141,8 @@ function OnboardingPage() {
                       onClick={() => togglePriority(option.value)}
                       className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition-all ${
                         active
-                          ? "border-gold bg-gold-soft/40 shadow-soft"
-                          : "bg-sand/40 hover:border-gold/60"
+                          ? "border-gold/80 bg-primary/40 shadow-glow"
+                          : "border-border bg-card/50 hover:border-gold/60"
                       }`}
                     >
                       <span
