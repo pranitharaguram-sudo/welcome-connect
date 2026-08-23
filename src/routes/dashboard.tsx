@@ -97,7 +97,7 @@ function DashboardPage() {
             <Button
               variant="outline"
               className="rounded-xl"
-              onClick={() => navigate({ to: "/onboarding" })}
+              onClick={() => navigate({ to: "/onboarding", search: { edit: "1" } })}
             >
               <Pencil className="mr-2 size-4" />
               Edit answers

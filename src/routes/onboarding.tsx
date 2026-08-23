@@ -52,7 +52,8 @@ function OnboardingPage() {
       .maybeSingle()
       .then(({ data }) => {
         if (!active) return;
-        if (data?.completed_at) {
+        const editing = new URLSearchParams(window.location.search).has("edit");
+        if (data?.completed_at && !editing) {
           void navigate({ to: "/dashboard", replace: true });
           return;
         }
