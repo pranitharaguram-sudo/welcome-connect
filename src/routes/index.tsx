@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -9,21 +9,22 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/use-auth";
+import journeyPath from "@/assets/journey-path.jpg";
 
 export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Sign in — Kindle" },
+      { title: "Your Journey Awaits — Wayfarer" },
       {
         name: "description",
         content:
-          "Create an account or sign in with Google to set up your Kindle profile in three short questions.",
+          "Sign in with Google or email to begin your journey and map the worlds that matter to you.",
       },
-      { property: "og:title", content: "Sign in — Kindle" },
+      { property: "og:title", content: "Your Journey Awaits — Wayfarer" },
       {
         property: "og:description",
-        content: "Create an account or sign in with Google to get started.",
+        content: "Begin your journey. Sign in with Google or email.",
       },
     ],
   }),
@@ -53,10 +54,23 @@ function GoogleMark() {
   );
 }
 
+function Compass() {
+  return (
+    <svg viewBox="0 0 100 100" className="text-gold mx-auto size-16" aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeWidth="1.5">
+        <circle cx="50" cy="50" r="14" opacity="0.6" />
+        <circle cx="50" cy="50" r="22" opacity="0.25" />
+      </g>
+      <path d="M50 6 57 43 94 50 57 57 50 94 43 57 6 50 43 43Z" fill="currentColor" />
+    </svg>
+  );
+}
+
 function LandingPage() {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [showEmail, setShowEmail] = useState(false);
+  const [mode, setMode] = useState<"signin" | "signup">("signup");
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -117,125 +131,148 @@ function LandingPage() {
   }
 
   return (
-    <main className="bg-warm min-h-screen px-5 py-10">
-      <div className="mx-auto grid w-full max-w-5xl items-center gap-12 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:py-16">
-        <section className="animate-rise">
-          <span className="inline-flex items-center gap-2 rounded-full bg-card/70 px-4 py-1.5 text-sm text-muted-foreground shadow-soft">
-            <Sparkles className="size-4 text-gold" />
-            Three questions. That's it.
-          </span>
-          <h1 className="mt-6 text-5xl leading-[1.05] font-semibold sm:text-6xl">
-            A warmer place to
-            <span className="block text-gold">know yourself better.</span>
-          </h1>
-          <p className="text-muted-foreground mt-5 max-w-md text-lg">
-            Sign in, tell us what matters to you right now, and we'll keep it all in one
-            calm little dashboard you can come back to.
-          </p>
-        </section>
+    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-5 py-14">
+      <img
+        src={journeyPath}
+        alt="A lantern-lit stone path winding toward a distant golden castle at dusk"
+        width={1024}
+        height={1536}
+        className="absolute inset-0 size-full object-cover object-bottom"
+      />
+      <div className="bg-night/80 absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background" />
 
-        <section className="animate-rise bg-card shadow-soft rounded-3xl border p-7 sm:p-9">
-          {sentEmail ? (
-            <div className="space-y-4 text-center">
-              <h2 className="text-2xl font-semibold">Check your inbox</h2>
-              <p className="text-muted-foreground text-sm">
-                We sent a confirmation link to <strong>{email}</strong>. Click it and come
-                right back.
-              </p>
-              <Button variant="outline" onClick={() => setSentEmail(false)}>
-                Back
-              </Button>
-            </div>
-          ) : (
-            <>
-              <h2 className="text-2xl font-semibold">
-                {mode === "signin" ? "Welcome back" : "Create your account"}
-              </h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                {mode === "signin"
-                  ? "Sign in to pick up where you left off."
-                  : "It takes less than a minute."}
-              </p>
+      <div className="animate-rise relative w-full max-w-md text-center">
+        <Compass />
+        <h1 className="mt-7 text-5xl leading-tight font-semibold sm:text-6xl">
+          Your Journey
+          <span className="text-gilded block">Awaits</span>
+        </h1>
+        <p className="font-sans mt-5 text-lg text-foreground/75 italic">
+          Every step brings you closer to who you're meant to become.
+        </p>
 
-              <Button
+        {sentEmail ? (
+          <div className="glass-panel shadow-deep mt-10 space-y-4 rounded-3xl p-7">
+            <h2 className="text-2xl">Check your inbox</h2>
+            <p className="text-muted-foreground text-sm">
+              We sent a confirmation link to <strong>{email}</strong>. Follow it, and the
+              path continues.
+            </p>
+            <Button variant="ghost" onClick={() => setSentEmail(false)}>
+              Back
+            </Button>
+          </div>
+        ) : !showEmail ? (
+          <div className="mt-11 space-y-7">
+            <Button
+              onClick={handleGoogle}
+              disabled={busy}
+              className="border-gold/50 shadow-glow h-14 w-full rounded-full border tracking-[0.28em] uppercase"
+            >
+              {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+              Begin Journey
+            </Button>
+            <p className="text-muted-foreground text-sm">Log in to continue</p>
+            <div className="flex items-center justify-center gap-4">
+              <button
                 type="button"
-                variant="outline"
-                className="mt-6 h-12 w-full gap-3 rounded-xl text-base"
                 onClick={handleGoogle}
-                disabled={busy}
+                aria-label="Continue with Google"
+                className="border-gold/35 hover:border-gold/80 hover:shadow-glow flex size-14 items-center justify-center rounded-full border bg-card/60 transition-all"
               >
                 <GoogleMark />
-                Continue with Google
-              </Button>
-
-              <div className="my-6 flex items-center gap-3">
-                <span className="h-px flex-1 bg-border" />
-                <span className="text-muted-foreground text-xs tracking-widest uppercase">
-                  or
-                </span>
-                <span className="h-px flex-1 bg-border" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowEmail(true)}
+                aria-label="Continue with email"
+                className="border-gold/35 hover:border-gold/80 hover:shadow-glow flex size-14 items-center justify-center rounded-full border bg-card/60 transition-all"
+              >
+                <Mail className="text-gold size-5" />
+              </button>
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <span className="gold-rule flex-1" />
+              <span className="text-muted-foreground font-sans text-sm italic">
+                Three questions await
+              </span>
+              <span className="gold-rule flex-1" />
+            </div>
+          </div>
+        ) : (
+          <div className="glass-panel shadow-deep mt-9 rounded-3xl p-7 text-left">
+            <h2 className="text-center text-xl tracking-widest uppercase">
+              {mode === "signin" ? "Welcome back" : "Create your account"}
+            </h2>
+            <form onSubmit={handleEmail} className="mt-6 space-y-4">
+              {mode === "signup" && (
+                <div className="space-y-2">
+                  <Label htmlFor="nickname">Nickname</Label>
+                  <Input
+                    id="nickname"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                    placeholder="What shall we call you?"
+                    maxLength={40}
+                    required
+                    className="h-11 rounded-xl bg-background/40"
+                  />
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  maxLength={255}
+                  required
+                  className="h-11 rounded-xl bg-background/40"
+                />
               </div>
-
-              <form onSubmit={handleEmail} className="space-y-4">
-                {mode === "signup" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="nickname">Nickname</Label>
-                    <Input
-                      id="nickname"
-                      value={nickname}
-                      onChange={(e) => setNickname(e.target.value)}
-                      placeholder="What should we call you?"
-                      maxLength={40}
-                      required
-                      className="h-11 rounded-xl"
-                    />
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    maxLength={255}
-                    required
-                    className="h-11 rounded-xl"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="At least 6 characters"
-                    minLength={6}
-                    required
-                    className="h-11 rounded-xl"
-                  />
-                </div>
-                <Button type="submit" className="h-12 w-full rounded-xl text-base" disabled={busy}>
-                  {busy && <Loader2 className="mr-2 size-4 animate-spin" />}
-                  {mode === "signin" ? "Sign in" : "Create account"}
-                </Button>
-              </form>
-
-              <p className="text-muted-foreground mt-5 text-center text-sm">
-                {mode === "signin" ? "New here?" : "Already have an account?"}{" "}
-                <button
-                  type="button"
-                  className="text-gold font-medium underline-offset-4 hover:underline"
-                  onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-                >
-                  {mode === "signin" ? "Create an account" : "Sign in"}
-                </button>
-              </p>
-            </>
-          )}
-        </section>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="At least 6 characters"
+                  minLength={6}
+                  required
+                  className="h-11 rounded-xl bg-background/40"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={busy}
+                className="border-gold/50 h-12 w-full rounded-full border tracking-[0.2em] uppercase"
+              >
+                {busy && <Loader2 className="mr-2 size-4 animate-spin" />}
+                {mode === "signin" ? "Enter" : "Create account"}
+              </Button>
+            </form>
+            <p className="text-muted-foreground mt-5 text-center text-sm">
+              {mode === "signin" ? "New here?" : "Already have an account?"}{" "}
+              <button
+                type="button"
+                className="text-gold underline-offset-4 hover:underline"
+                onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+              >
+                {mode === "signin" ? "Create an account" : "Sign in"}
+              </button>
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowEmail(false)}
+              className="text-muted-foreground mt-4 w-full text-center text-xs tracking-widest uppercase hover:text-foreground"
+            >
+              Back
+            </button>
+          </div>
+        )}
       </div>
     </main>
   );
